@@ -58,6 +58,18 @@ rosbag play (path of the rosbag)
 
 ## Convert rosbag topics to csv files
 
+Linux OS:
+Download latest version of Ubuntu from: https://ubuntu.com/download
+
+Start-up disk: https://rufus.ie/
+
+PACKAGE:
+Rosbag package installation:
+https://anaconda.org/conda-forge/ros-rosbag
+Cryptodome package installation:
+https://anaconda.org/anaconda/pycryptodomex
+
+
 Origional bag_to_csv.py from [This Site](http://www.clearpathrobotics.com/assets/guides/kinetic/ros/Converting%20ROS%20bag%20to%20CSV.html)
 
 The python file will convert every rostopic into csv files.
@@ -450,5 +462,23 @@ for j in range(0,No_of_files):
 os.remove("text")
 print("Rename Over.")
 ```
+Some useful command:
+Error in mounting and unmount:
+```
+Sudo fdisk -l
+Sudo ntfsfx diskname
+```
+Compress and decompress:
+```
+tar  -xzvf filename.tar.gz ~/pathtofile
+Tar -xzvf filename.tar.gz
 
+Sudo apt-install ncompress
+Compress -v filename/path 
+```
+
+Fast Copy:
+```
+Rsync -ah --progress filename destpath 
+```
 
