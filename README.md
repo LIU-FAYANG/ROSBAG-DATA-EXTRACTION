@@ -17,7 +17,7 @@ catkin bulid
 ```
 
 Set up: install the image_view package
-`````
+```
 sudo apt install ros-melodic-image-view 
 roscd image_view
 rosmake image_view
