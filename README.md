@@ -370,3 +370,85 @@ print("Done reading all " + numberOfFiles + " bag files.")
 
 
 ```
+
+# After the images and txt files are extracted from the bagfile.
+These are some useful python files that delete the empty txt files, list out the frames with detected objects. 
+
+Delete_empty.py
+```
+import os
+
+directory_path =  'delayed'
+No_of_files = len(os.listdir(directory_path))
+
+#remove empty txt files
+for i in range(No_of_files):
+	filename = directory_path + "/"+str(i)+".txt"
+	with open(filename, 'r') as read_obj:
+		# read first character
+		one_char = read_obj.read(1)
+		# if not fetched then file is empty
+		if one_char == '\n':
+			os.remove(filename)
+
+```
+Object_detected.py
+```
+import os
+
+f = open("frames_contain_objects.txt", 'w')
+
+directory_path = 'txt'
+No_of_files = len(os.listdir(directory_path))
+No_of_files
+
+for i in range(No_of_files):
+    filename = "txt/"+str(i)+".txt"
+    filesize = os.path.getsize(filename)
+    i = ("%04d" % (i,))
+
+
+    if filesize > 60:
+        f.write(os.path.abspath("frames/"+i+".jpg"))
+        f.write("\n")
+
+f.close()
+```
+
+If the extracted txt file does not match with the extracted images: 
+use delay.py to rename the txt files.
+
+delay.py:
+
+```
+import os
+
+print("Delay ==> ")
+delay = input()
+delay = int(delay)
+
+path = "delayed"
+
+try:
+    os.mkdir(path)
+except OSError:
+    print ("Creation of the directory %s failed" % path)
+else:
+    print ("Successfully created the directory %s " % path)
+
+filename = "text/"
+tmp = os.listdir(filename)
+No_of_files = len(os.listdir(filename))
+
+for j in range(0,No_of_files):
+    index = int(tmp[j].strip(".txt"))
+    oldindex = filename + tmp[j]
+    newindex = "delayed/" + str(index-delay) + '.txt'
+    os.rename(oldindex,newindex)
+    print("Rename: "+tmp[j]+" ==> " +str(index-delay) + '.txt')
+
+os.remove("text")
+print("Rename Over.")
+```
+
+
