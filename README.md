@@ -116,6 +116,8 @@ YellowRight
 Data Normalization:
 Divide x_center and width by image width(1024), y_center and height by image height(768).
 
+***image width and height might be different for different rosbag, depend on the image extracted from the bag file.
+
 The prepared dataset can refer to the DATA.csv file inside csv_to_txt folder.
 
 Code:
