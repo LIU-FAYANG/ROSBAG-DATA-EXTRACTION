@@ -65,7 +65,10 @@ rosrun image_view image_saver _sec_per_frame:=0.05 image:=/camera/image_rects th
 rosbag play (path of the rosbag)
 ```
 
-## Convert rosbag topics to csv files
+# Convert rosbag topics to txt files,
+
+##Instruction: put Data_Extraction_From_Rosbag_final.py and the bagfiles in the same folder, run the python script txt files will be extracted to bagfilename_txt.
+
 
 Linux OS:
 Download latest version of Ubuntu from: https://ubuntu.com/download
@@ -386,7 +389,7 @@ Convert from cleaned csv file to txt files.
 	No_of_files = len(os.listdir(directory_path))
 
 ```
-# remove empty txt files. The reason why I do this is for this system, the 'blank' txt files will be filled with enters, which makes it's size bigger than 0,so we cannot use os.path.getsize() to solve this problem.
+remove empty txt files. The reason why I do this is for this system, the 'blank' txt files will be filled with enters, which makes it's size bigger than 0,so we cannot use os.path.getsize() to solve this problem.
 ```
 
 	
@@ -414,7 +417,7 @@ print("Done reading all " + numberOfFiles + " bag files.")
 
 ```
 
-# After the images and txt files are extracted from the bagfile.
+After the images and txt files are extracted from the bagfile.
 These are some useful python files that delete the empty txt files, list out the frames with detected objects. 
 
 Delete_empty.py
