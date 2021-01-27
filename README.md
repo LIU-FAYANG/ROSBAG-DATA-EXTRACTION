@@ -5,8 +5,8 @@ Copy the compressed file to a certain location and decompress the file:
 ```
 cp ./2b_bag_1113.tar.gz(compressed file name) ~/Documents 
 sync
-cd Documents/
-tar -xzvf 2b_bag_1113.tar.gz  //decompress
+tar -xzvf filename.tar.gz  //decompress to current repository 
+
 ```
 
 Build msg types for the rostopic
@@ -27,22 +27,31 @@ sudo apt-get install mjpegtools
 Run the roscore and play the recorded data inside the rosbag,check the ros topics with images and bounding box corrdinates.
 ```
 roscore
-rqt_image_view 
+rqt_image_view   #image viewer, sycronized with the running rosbag topic
 rosbag play ~/Documents/2020-11-13-15-33-10.bag 
 Rosbag play ~/DOcuments/2020-11-13-15-33-10.bag -s 250  // -s: start point
 
 rostopic list //get the list of rostopic, in this case, the image_rects contains the frames and boject_detect_front contan the coordinates
+```
 
+ROS topics related to frames and bouding boxes:
+```
+/camera/image_rects : traffic lights
+/stereo/long/image_rects : traffic lights
+/stereo/short/image_rects : obstales 
+
+/detection/vision_objects/traffic_light
+/detection/vision_objects/front
 
 ```
 
 Image Extraction
 
-Need to check the UNIX timestamp to obtain the extracted csv file to get the PFS(frames per second) value 
-Rostopic:
-/camera/image_rects : traffic lights
-/stereo/long/image_rects : traffic lights
-/stereo/short/image_rects : obstales 
+ROS tutorial link:
+http://wiki.ros.org/rosbag/Tutorials/Exporting%20image%20and%20video%20data#Tutorial_setup
+
+Need to check the UNIX timestamp to obtain the extracted csv file to get the PFS(frames per second) value(in csv file):
+
 
 Take note that different rosbag may have different rostopic name for the data you want to extract.
 
@@ -75,8 +84,7 @@ Origional bag_to_csv.py from [This Site](http://www.clearpathrobotics.com/assets
 The python file will convert every rostopic into csv files.
 Choose the one with name: _slash_detection_slash_vision_objects_slash_front.csv, which contains the coordinates of the bounding box:(in yolo format)
 
-Note: Do not convert the csv file into a xsl file, otherwise later the csv_to_txt file won’t work.
-Data preparation can be done with excel.
+Note: Do not convert the csv file into a xsl file,that may result in data loss.
 
 ## Simply convert the scv files to multiple txt files.
 Simple python program, read each row from the csv file.
@@ -102,12 +110,12 @@ with open("DATA.csv", "r", ) as f:
         g.close()
 ```
 
-## Data Preparation 
+## Data Preparation(Pandas) 
 
 Refer to [Label for each column of the csv file](https://github.com/streetdrone-home/Autoware/blob/master/ros/src/msgs/autoware_msgs/msg/DetectedObject.msg)
 Keep the useful columns, delete others.
 
-Note: those 6602 rows are marked with ‘x’ in front, to avoid excel auto delete those blank row, because we want each frame match the corresponding txt file.
+Note: all rows are marked with ‘x’ in front, to avoid excel auto delete those blank row, because we want each frame match the corresponding txt file. If there's mothing deteted for that frame, just extract blank txt files.
 
 Each row corresponds to each frame extracted from the rosbag, each detected object need to be separated by one space.
 
@@ -130,9 +138,11 @@ Divide x_center and width by image width(1024), y_center and height by image hei
 
 ***image width and height might be different for different rosbag, depend on the image extracted from the bag file.
 
-The prepared dataset can refer to the DATA.csv file inside csv_to_txt folder.
 
-Code:
+Code walk through:
+
+Original bag_to_scv file below with minor modifications, avoid copying the rosbag file once again in the same directory. The original script is quite time consuming duo to redundant back up process. In addition, we only need specific rosbag topic to be extracted in csv format instead for all the rostopics, I did some modifications on that, otherwise it's time consuming and it'll hover unnecessary disk space.
+   
 ```
 import rosbag, sys, csv
 import time
@@ -223,21 +233,32 @@ for bagFile in listOfBagFiles:
 					values.append(pair[1])
 			filewriter.writerow(values)
 	bag.close()
-    
-	#Find the maximum column for all the rows
+   
+```
+Data cleaning process below:
+
+```
+   
+	#Find the maximum number of columns among all the rows
+	
 	#with open(folder + "/" + "_slash_detection_slash_vision_objects_slash_front.csv", 'r',encoding = "ISO-8859-1") as temp_f:
 	#with open(folder + "/" + "_slash_detection_slash_vision_objects_slash_front.csv", 'r') as temp_f:
-
+	
+	#Encoding error solution: try utf-8
+	
 	with open(folder + "/" + "_slash_detection_slash_vision_objects_slash_traffic_light.csv", 'r') as temp_f:
 		# get No of columns in each line
 		col_count = [ len(l.split(",")) for l in temp_f.readlines() ]
 
 	### Generate column names  (names will be 0, 1, 2, ..., maximum columns - 1)
+	#Blank csv file, rosbag file error.
 	if col_count == 0:
 		print(folder +" has no detected object.")
 		continue 
 	#column_names = [i for i in range(max(col_count))] 
 
+
+        #Hard coding the column index from 1 to 1000, since there're maximum 9 objects can be detected in one frame. It's working but might need some modification. 
 	column_names = [i for i in range(1000)] 
 
 	import pandas as pd
@@ -247,12 +268,14 @@ for bagFile in listOfBagFiles:
 	#data = pd.read_csv(folder + "/"+"_slash_detection_slash_vision_objects_slash_front.csv",header = None,names=column_names )
 	#data.to_csv( folder + "_slash_detection_slash_vision_objects_slash_front.csv", index=False)
 
+	
+	#Mixed type data in the same column solved...
 	data = pd.read_csv(folder + "/"+"_slash_detection_slash_vision_objects_slash_traffic_light.csv",header = None,names=column_names, engine='python')
 	data.loc[0] = ""
 	data.to_csv( folder + "_slash_detection_slash_vision_objects_slash_traffic_light.csv", index=False)
 
 
-	#maximum number of objects detected in one frame:9		
+	#maximum number of objects detected in one frame:9, still hard coding, may be there's better way...		
 	f = pd.read_csv(folder + "_slash_detection_slash_vision_objects_slash_traffic_light.csv", usecols=[0,15,90,91,92,93,95,118,193,194,195,196,198,221,296,297,298,299,301,324,399,400,401,402,404,427,502,503,504,505,507,530,605,606,607,608,610,633,708,709,710,711,713,736,811,812,813,814,816,839,914,915,916,917,919,])
 
 	f.to_csv(folder+"_cleaned.csv", index=False)
@@ -321,6 +344,10 @@ for bagFile in listOfBagFiles:
 	f["916"] = f["916"]/1224
 	f["917"] = f["917"]/1024
 	f["0"] = "x"
+	
+```
+Convert from cleaned csv file to txt files.
+```
 	f.to_csv(folder + "_cleaned.csv", index=False)
 
 	with open(folder + "_cleaned.csv",'r') as f:
@@ -358,13 +385,17 @@ for bagFile in listOfBagFiles:
 	directory_path = folder + '_txt'
 	No_of_files = len(os.listdir(directory_path))
 
-	# remove empty txt files
+```
+# remove empty txt files. The reason why I do this is for this system, the 'blank' txt files will be filled with enters, which makes it's size bigger than 0,so we cannot use os.path.getsize() to solve this problem.
+```
+
+	
 	for i in range(No_of_files):
 		filename = folder + "_txt/" + str(i) + ".txt"
 		with open(filename, 'r') as read_obj:
 			# read first character
 			one_char = read_obj.read(1)
-			# if not fetched then file is empty
+			# if not fetched then file is empty, 
 			if one_char == '\n':
 				os.remove(filename)
 '''	
