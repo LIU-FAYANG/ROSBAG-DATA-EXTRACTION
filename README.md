@@ -67,7 +67,7 @@ rosbag play (path of the rosbag)
 
 # Convert rosbag topics to txt files,
 
-##Instruction: put Data_Extraction_From_Rosbag_final.py and the bagfiles in the same folder, run the python script txt files will be extracted to bagfilename_txt.
+## Instruction: put Data_Extraction_From_Rosbag_final.py and the bagfiles in the same folder, run the python script txt files will be extracted to bagfilename_txt.
 
 
 Linux OS:
