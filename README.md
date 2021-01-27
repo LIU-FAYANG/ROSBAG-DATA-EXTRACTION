@@ -65,7 +65,7 @@ rosrun image_view image_saver _sec_per_frame:=0.05 image:=/camera/image_rects th
 rosbag play (path of the rosbag)
 ```
 
-# Convert rosbag topics to txt files,
+# Extract bounding box coordinates in YOLO format.
 
 ## Instruction: put Data_Extraction_From_Rosbag_final.py and the bagfiles in the same folder, run the python script txt files will be extracted to bagfilename_txt.
 
